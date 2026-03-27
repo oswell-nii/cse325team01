@@ -24,7 +24,8 @@
             }
             else
             {
-                <EditForm Model="CurrentTask" OnValidSubmit="HandleValidSubmit" FormName="EditTaskForm">
+                <EditForm Model="CurrentTask" OnValidSubmit="HandleValidSubmit" FormName="EditTaskForm" FormMappingName="EditTaskForm">
+                    <AntiforgeryToken />
                     <DataAnnotationsValidator />
 
                     <input type="hidden" name="CurrentTask.Id" value="@CurrentTask.Id" />

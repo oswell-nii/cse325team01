@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Authentication
 @using TodoApp.Models
 @using System.ComponentModel.DataAnnotations
-@inject SignInManager<ApplicationUser> SignInManager
 @inject NavigationManager NavigationManager
 
 <PageTitle>Login</PageTitle>
@@ -19,19 +18,19 @@
             </div>
         }
 
-        <EditForm Model="Input" FormName="login" OnValidSubmit="LoginUser">
-            <DataAnnotationsValidator />
+        <form action="Account/Login" method="post">
+            <AntiforgeryToken />
+
+            <input type="hidden" name="ReturnUrl" value="@ReturnUrl" />
 
             <div class="form-group mb-3">
                 <label for="email" class="form-label">Email</label>
-                <InputText id="email" class="form-control" @bind-Value="Input.Email" placeholder="name@example.com" />
-                <ValidationMessage For="() => Input.Email" class="text-danger" />
+                <input type="email" name="Email" id="email" class="form-control" placeholder="name@example.com" required />
             </div>
 
             <div class="form-group mb-4">
                 <label for="password" class="form-label">Password</label>
-                <InputText type="password" id="password" class="form-control" @bind-Value="Input.Password" placeholder="Password" />
-                <ValidationMessage For="() => Input.Password" class="text-danger" />
+                <input type="password" name="Password" id="password" class="form-control" placeholder="Password" required />
             </div>
 
             <button type="submit" class="btn btn-primary w-100">Log in</button>
@@ -39,37 +38,14 @@
             <div class="text-center mt-3">
                 <p>Don't have an account? <a href="/register">Register here</a>.</p>
             </div>
-        </EditForm>
+        </form>
     </div>
 </div>
 
 @code {
-    private string? ErrorMessage;
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorMessage { get; set; }
 
-    [SupplyParameterFromForm]
-    public LoginInputModel Input { get; set; } = new();
-
-    public class LoginInputModel
-    {
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-    }
-
-    public async Task LoginUser()
-    {
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, isPersistent: true, lockoutOnFailure: false);
-        if (result.Succeeded)
-        {
-            NavigationManager.NavigateTo("/tasks", forceLoad: true);
-        }
-        else
-        {
-            ErrorMessage = "Invalid login attempt.";
-        }
-    }
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
 }
