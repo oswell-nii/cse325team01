@@ -10,19 +10,22 @@
 @inject NavigationManager NavigationManager
 
 @code {
-    [SupplyParameterFromForm]
-    public int Id { get; set; }
+    [CascadingParameter]
+    public HttpContext? HttpContext { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        if (HttpMethods.IsPost(NavigationManager.Uri))
+        if (HttpContext != null && HttpMethods.IsPost(HttpContext.Request.Method))
         {
-            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-
-            if (!string.IsNullOrEmpty(userId))
+            if (HttpContext?.Request.Form.TryGetValue("Id", out var idValues) == true && int.TryParse(idValues.First(), out var id))
             {
-                await TaskService.DeleteTaskAsync(Id, userId);
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                var userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await TaskService.DeleteTaskAsync(id, userId);
+                }
             }
             NavigationManager.NavigateTo("/tasks");
         }
