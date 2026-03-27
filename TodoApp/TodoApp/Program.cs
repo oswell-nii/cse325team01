@@ -63,4 +63,24 @@ app.MapRazorComponents<App>()
 
 app.MapAdditionalIdentityEndpoints();
 
+app.MapPost("/api/tasks/toggle/{id:int}", async (int id, System.Security.Claims.ClaimsPrincipal user, ITaskService taskService) =>
+{
+    var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (!string.IsNullOrEmpty(userId))
+    {
+        await taskService.ToggleTaskCompletionAsync(id, userId);
+    }
+    return Results.Redirect("/tasks");
+}).RequireAuthorization();
+
+app.MapPost("/api/tasks/delete/{id:int}", async (int id, System.Security.Claims.ClaimsPrincipal user, ITaskService taskService) =>
+{
+    var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    if (!string.IsNullOrEmpty(userId))
+    {
+        await taskService.DeleteTaskAsync(id, userId);
+    }
+    return Results.Redirect("/tasks");
+}).RequireAuthorization();
+
 app.Run();
